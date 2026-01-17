@@ -2,26 +2,16 @@ import { memo } from "react";
 import { EdgeLabelRenderer, type EdgeProps } from "@xyflow/react";
 import type { StateScope } from "@/types/diagram";
 
-interface MessageEdgeData {
-  label: string;
-  stepType: string;
-  scope: StateScope;
-  yPosition: number;
-  sourceX: number;
-  targetX: number;
+interface MessageEdgeData extends Record<string, unknown> {
+  label?: string;
+  stepType?: string;
+  scope?: StateScope;
+  yPosition?: number;
+  sourceX?: number;
+  targetX?: number;
+  stateName?: string;
+  targetAction?: string;
 }
-
-const scopeColors: Record<StateScope, string> = {
-  local: "bg-gray-500",
-  subtree: "bg-blue-500",
-  global: "bg-green-500",
-};
-
-const scopeStrokeColors: Record<StateScope, string> = {
-  local: "#6b7280",
-  subtree: "#3b82f6",
-  global: "#22c55e",
-};
 
 const stepTypeLabels: Record<string, string> = {
   dispatch: "→",
@@ -33,7 +23,7 @@ const stepTypeLabels: Record<string, string> = {
 
 export const MessageEdge = memo(function MessageEdge({
   id,
-  sourceX,
+  sourceX, // React Flowからの正確なハンドル位置を使用
   targetX,
   data,
   style,
@@ -42,11 +32,19 @@ export const MessageEdge = memo(function MessageEdge({
   const scope = data?.scope ?? "local";
   const label = data?.label ?? "";
   const stepType = data?.stepType ?? "dispatch";
+  const stateName = data?.stateName;
+  const targetAction = data?.targetAction;
 
-  // 水平エッジのパスを計算
-  const nodeWidth = 150;
-  const startX = Math.min(sourceX, targetX) + nodeWidth / 2;
-  const endX = Math.max(sourceX, targetX) + nodeWidth / 2;
+  // ラベルテキストの構築
+  let displayLabel = label;
+  if (stepType === "stateChange" && stateName) {
+    // 状態変更の場合は「状態名 ← 値」のように表示
+    displayLabel = `${stateName} ← ${label}`;
+  }
+
+  // 水平エッジのパスを計算（ハンドル位置をそのまま使用）
+  const startX = Math.min(sourceX, targetX);
+  const endX = Math.max(sourceX, targetX);
   const isLeftToRight = sourceX < targetX;
 
   // 矢印の方向を決定
@@ -60,8 +58,59 @@ export const MessageEdge = memo(function MessageEdge({
   const labelX = (startX + endX) / 2;
   const labelY = yPosition;
 
-  const strokeColor = scopeStrokeColors[scope];
-  const strokeWidth = scope === "global" ? 2 : 1;
+  const targetType = (data?.targetType as string) ?? "component";
+  const targetScope = (data?.targetScope as StateScope) ?? "local";
+
+  // バブル/ラベルのスタイル決定ロジック
+  const getBubbleStyle = (type: string, scope?: StateScope) => {
+    if (type === "component")
+      return {
+        bg: "bg-blue-500",
+        border: "border-blue-600",
+        tri: "border-b-blue-500",
+        text: "text-white",
+      };
+    if (type === "service")
+      return {
+        bg: "bg-purple-500",
+        border: "border-purple-600",
+        tri: "border-b-purple-500",
+        text: "text-white",
+      };
+    if (type === "store") {
+      if (scope === "global")
+        return {
+          bg: "bg-green-500",
+          border: "border-green-600",
+          tri: "border-b-green-500",
+          text: "text-white",
+        };
+      if (scope === "subtree")
+        return {
+          bg: "bg-teal-500", // Tailwind default teal
+          border: "border-teal-600",
+          tri: "border-b-teal-500",
+          text: "text-white",
+        };
+      return {
+        bg: "bg-orange-500",
+        border: "border-orange-600",
+        tri: "border-b-orange-500",
+        text: "text-white",
+      };
+    }
+    // Default / External / Dispatch
+    return {
+      bg: "bg-slate-500",
+      border: "border-slate-600",
+      tri: "border-b-slate-500",
+      text: "text-white",
+    };
+  };
+
+  const bubbleStyle = getBubbleStyle(targetType, targetScope);
+
+  // strokeDasharray は scope に依存するため残す
   const strokeDasharray =
     scope === "local" ? "4 4" : scope === "subtree" ? "8 4" : undefined;
 
@@ -72,35 +121,65 @@ export const MessageEdge = memo(function MessageEdge({
         id={id}
         d={edgePath}
         fill="none"
-        stroke={strokeColor}
-        strokeWidth={strokeWidth}
+        stroke={style?.stroke ?? "#64748b"} // styleがあればそれを使用、なければデフォルト
+        strokeWidth={style?.strokeWidth ?? 1}
         strokeDasharray={strokeDasharray}
-        style={style}
         className={stepType === "subscribe" ? "animate-pulse" : ""}
       />
 
-      {/* 矢印 */}
+      {/* 矢印 (色は線の色に合わせる) */}
       <polygon
         points={`${arrowX},${yPosition - 4} ${arrowX + arrowDirection * 8},${yPosition} ${arrowX},${yPosition + 4}`}
-        fill={strokeColor}
+        fill={style?.stroke ?? "#64748b"}
+        className="pointer-events-none"
       />
 
-      {/* ラベル */}
-      <EdgeLabelRenderer>
-        <div
-          className={`
-            absolute px-2 py-0.5 rounded text-xs font-medium text-white shadow-sm
-            ${scopeColors[scope]}
+      {/* ラベル（エッジ中央） */}
+      {/* ラベル（エッジ中央） - Dispatchの場合はターゲットの吹き出しのみで十分なので非表示 */}
+      {stepType !== "dispatch" && (
+        <EdgeLabelRenderer>
+          <div
+            className={`
+            absolute px-2 py-0.5 rounded text-xs font-medium shadow-sm
+            ${bubbleStyle.bg} ${bubbleStyle.text}
             pointer-events-all nodrag nopan
+            whitespace-nowrap z-10
           `}
-          style={{
-            transform: `translate(-50%, -100%) translate(${labelX}px, ${labelY - 8}px)`,
-          }}
-        >
-          <span className="mr-1">{stepTypeLabels[stepType] ?? "→"}</span>
-          {label}
-        </div>
-      </EdgeLabelRenderer>
+            style={{
+              transform: `translate(-50%, -100%) translate(${labelX}px, ${
+                labelY - 5
+              }px)`,
+            }}
+          >
+            <span className="mr-1">{stepTypeLabels[stepType] ?? "→"}</span>
+            {displayLabel}
+          </div>
+        </EdgeLabelRenderer>
+      )}
+
+      {/* ターゲットアクションの吹き出し（矢印の先端） */}
+      {targetAction && (
+        <EdgeLabelRenderer>
+          <div
+            className={`
+              absolute px-2 py-1 rounded text-xs shadow-sm pointer-events-all nodrag nopan z-20 whitespace-nowrap hover:z-50 transition-all
+              ${bubbleStyle.bg} ${bubbleStyle.border} ${bubbleStyle.text} border
+            `}
+            style={{
+              // 矢印の下側に表示（通知ラベルとの被りを回避）
+              transform: `translate(-50%, 0) translate(${arrowX}px, ${
+                yPosition + 10
+              }px)`,
+            }}
+          >
+            {/* 上向きの三角（吹き出しのツノ） */}
+            <div
+              className={`absolute bottom-full left-1/2 -translate-x-1/2 -mb-px border-4 border-transparent ${bubbleStyle.tri}`}
+            ></div>
+            {targetAction}
+          </div>
+        </EdgeLabelRenderer>
+      )}
     </>
   );
 });

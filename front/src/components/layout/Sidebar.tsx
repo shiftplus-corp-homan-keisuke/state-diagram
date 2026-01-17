@@ -149,40 +149,58 @@ export function Sidebar() {
                   <Plus className="h-3 w-3 mr-1" />
                   追加
                 </Button>
-                {diagram.states.map((state) => (
-                  <div
-                    key={state.id}
-                    className={`group flex items-center justify-between px-2 py-1 rounded text-sm cursor-pointer hover:bg-muted ${
-                      selectedStateId === state.id ? "bg-muted" : ""
-                    }`}
-                    onClick={() => selectState(state.id)}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span>{scopeIcons[state.scope]}</span>
-                      <span className="truncate">{state.name}</span>
-                    </div>
-                    <div className="hidden group-hover:flex items-center gap-1">
-                      <button
-                        className="p-0.5 hover:text-primary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openStateModal(state.id);
-                        }}
-                      >
-                        <Edit2 className="h-3 w-3" />
-                      </button>
-                      <button
-                        className="p-0.5 hover:text-destructive"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteState(state.id);
-                        }}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                <div className="space-y-3 mt-2">
+                  {diagram.actors.map((actor) => {
+                    const actorStates = diagram.states.filter(
+                      (s) => s.owner === actor.id,
+                    );
+                    if (actorStates.length === 0) return null;
+
+                    return (
+                      <div key={actor.id} className="space-y-1">
+                        <div className="flex items-center gap-2 px-2 text-xs font-semibold text-muted-foreground">
+                          <span>{scopeIcons[actor.scope || "local"]}</span>
+                          <span className="truncate">{actor.name}</span>
+                        </div>
+                        <div className="pl-2 border-l-2 border-muted ml-3 space-y-0.5">
+                          {actorStates.map((state) => (
+                            <div
+                              key={state.id}
+                              className={`group flex items-center justify-between px-2 py-1 rounded text-sm cursor-pointer hover:bg-muted ${
+                                selectedStateId === state.id ? "bg-muted" : ""
+                              }`}
+                              onClick={() => selectState(state.id)}
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="truncate">{state.name}</span>
+                              </div>
+                              <div className="hidden group-hover:flex items-center gap-1">
+                                <button
+                                  className="p-0.5 hover:text-primary"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openStateModal(state.id);
+                                  }}
+                                >
+                                  <Edit2 className="h-3 w-3" />
+                                </button>
+                                <button
+                                  className="p-0.5 hover:text-destructive"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteState(state.id);
+                                  }}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </section>

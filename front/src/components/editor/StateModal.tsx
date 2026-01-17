@@ -19,40 +19,13 @@ import {
 } from "@/components/ui/select";
 import { useDiagramStore } from "@/stores/diagramStore";
 import { useUIStore } from "@/stores/uiStore";
-import type { State, StateScope } from "@/types/diagram";
-
-const scopes: {
-  value: StateScope;
-  label: string;
-  icon: string;
-  description: string;
-}[] = [
-  {
-    value: "local",
-    label: "ローカル",
-    icon: "📍",
-    description: "コンポーネント内で完結",
-  },
-  {
-    value: "subtree",
-    label: "サブツリー",
-    icon: "🌲",
-    description: "特定のコンポーネント以下",
-  },
-  {
-    value: "global",
-    label: "グローバル",
-    icon: "🌍",
-    description: "アプリ全体",
-  },
-];
+import type { State } from "@/types/diagram";
 
 export function StateModal() {
   const { diagram, addState, updateState } = useDiagramStore();
   const { isStateModalOpen, closeStateModal, editingStateId } = useUIStore();
 
   const [name, setName] = useState("");
-  const [scope, setScope] = useState<StateScope>("global");
   const [owner, setOwner] = useState("");
   const [dataType, setDataType] = useState("");
   const [description, setDescription] = useState("");
@@ -65,13 +38,11 @@ export function StateModal() {
   useEffect(() => {
     if (editingState) {
       setName(editingState.name);
-      setScope(editingState.scope);
       setOwner(editingState.owner);
       setDataType(editingState.dataType || "");
       setDescription(editingState.description || "");
     } else {
       setName("");
-      setScope("global");
       setOwner(diagram?.actors[0]?.id || "");
       setDataType("");
       setDescription("");
@@ -85,7 +56,6 @@ export function StateModal() {
     if (isEditing && editingStateId) {
       updateState(editingStateId, {
         name: name.trim(),
-        scope,
         owner,
         dataType: dataType.trim() || undefined,
         description: description.trim() || undefined,
@@ -94,7 +64,6 @@ export function StateModal() {
       const newState: State = {
         id: crypto.randomUUID(),
         name: name.trim(),
-        scope,
         owner,
         dataType: dataType.trim() || undefined,
         description: description.trim() || undefined,
@@ -144,31 +113,6 @@ export function StateModal() {
                 先にアクターを追加してください
               </p>
             )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="state-scope">スコープ</Label>
-            <Select
-              value={scope}
-              onValueChange={(v) => setScope(v as StateScope)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {scopes.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>
-                    <span className="flex items-center gap-2">
-                      <span>{s.icon}</span>
-                      <span>{s.label}</span>
-                      <span className="text-muted-foreground text-xs">
-                        - {s.description}
-                      </span>
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           <div className="space-y-2">

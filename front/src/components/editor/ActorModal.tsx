@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { useDiagramStore } from "@/stores/diagramStore";
 import { useUIStore } from "@/stores/uiStore";
-import type { Actor, ActorType } from "@/types/diagram";
+import type { Actor, ActorType, StateScope } from "@/types/diagram";
 
 const actorTypes: { value: ActorType; label: string; icon: string }[] = [
   { value: "component", label: "コンポーネント", icon: "🧩" },
@@ -28,12 +28,39 @@ const actorTypes: { value: ActorType; label: string; icon: string }[] = [
   { value: "external", label: "外部システム", icon: "🌐" },
 ];
 
+const scopes: {
+  value: StateScope;
+  label: string;
+  icon: string;
+  description: string;
+}[] = [
+  {
+    value: "local",
+    label: "ローカル",
+    icon: "📍",
+    description: "コンポーネント内で完結",
+  },
+  {
+    value: "subtree",
+    label: "サブツリー",
+    icon: "🌲",
+    description: "特定のコンポーネント以下",
+  },
+  {
+    value: "global",
+    label: "グローバル",
+    icon: "🌍",
+    description: "アプリ全体",
+  },
+];
+
 export function ActorModal() {
   const { diagram, addActor, updateActor } = useDiagramStore();
   const { isActorModalOpen, closeActorModal, editingActorId } = useUIStore();
 
   const [name, setName] = useState("");
   const [type, setType] = useState<ActorType>("component");
+  const [scope, setScope] = useState<StateScope>("local");
   const [description, setDescription] = useState("");
 
   const isEditing = !!editingActorId;
@@ -45,10 +72,12 @@ export function ActorModal() {
     if (editingActor) {
       setName(editingActor.name);
       setType(editingActor.type);
+      setScope(editingActor.scope || "local");
       setDescription(editingActor.description || "");
     } else {
       setName("");
       setType("component");
+      setScope("local");
       setDescription("");
     }
   }, [editingActor, isActorModalOpen]);
@@ -61,6 +90,7 @@ export function ActorModal() {
       updateActor(editingActorId, {
         name: name.trim(),
         type,
+        scope: type === "store" ? scope : undefined,
         description: description.trim() || undefined,
       });
     } else {
@@ -68,6 +98,7 @@ export function ActorModal() {
         id: crypto.randomUUID(),
         name: name.trim(),
         type,
+        scope: type === "store" ? scope : undefined,
         description: description.trim() || undefined,
       };
       addActor(newActor);
@@ -97,7 +128,7 @@ export function ActorModal() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="actor-type">種類</Label>
+            <Label htmlFor="actor-scope">種類</Label>
             <Select value={type} onValueChange={(v) => setType(v as ActorType)}>
               <SelectTrigger>
                 <SelectValue />
@@ -114,6 +145,33 @@ export function ActorModal() {
               </SelectContent>
             </Select>
           </div>
+
+          {type === "store" && (
+            <div className="space-y-2">
+              <Label htmlFor="actor-scope">スコープ</Label>
+              <Select
+                value={scope}
+                onValueChange={(v) => setScope(v as StateScope)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {scopes.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      <span className="flex items-center gap-2">
+                        <span>{s.icon}</span>
+                        <span>{s.label}</span>
+                        <span className="text-muted-foreground text-xs">
+                          - {s.description}
+                        </span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="actor-description">説明</Label>

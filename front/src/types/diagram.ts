@@ -12,6 +12,7 @@ export interface Actor {
   description?: string;
   parent?: string;
   color?: string;
+  scope?: StateScope;
 }
 
 /** 状態定義 */
@@ -19,7 +20,6 @@ export interface State {
   id: string;
   name: string;
   owner: string;
-  scope: StateScope;
   dataType?: string;
   description?: string;
 }
