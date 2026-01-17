@@ -60,32 +60,37 @@ export function JsonModal() {
 
   const handleApplyImport = () => {
     try {
-      const parsed = JSON.parse(jsonContent) as Diagram;
+      const parsed = JSON.parse(jsonContent) as any;
 
       // 基本的なバリデーション
       if (!parsed.id || !parsed.name) {
-        throw new Error("無効なダイアグラム形式です");
-      }
-      if (!Array.isArray(parsed.actors)) {
-        parsed.actors = [];
-      }
-      if (!Array.isArray(parsed.states)) {
-        parsed.states = [];
-      }
-      if (!Array.isArray(parsed.flows)) {
-        parsed.flows = [];
-      }
-      if (!Array.isArray(parsed.conditions)) {
-        parsed.conditions = [];
+        throw new Error("無効なダイアグラム形式です（id, nameは必須です）");
       }
 
-      // 現在のダイアグラムのIDを維持（インポートしたデータで上書き）
+      // Dateオブジェクトへの変換
+      // JSON.parse直後は文字列なので、明示的にDate型に変換する必要があります
+      parsed.createdAt = parsed.createdAt
+        ? new Date(parsed.createdAt)
+        : new Date();
+      parsed.updatedAt = parsed.updatedAt
+        ? new Date(parsed.updatedAt)
+        : new Date();
+
+      if (!Array.isArray(parsed.actors)) parsed.actors = [];
+      if (!Array.isArray(parsed.states)) parsed.states = [];
+      if (!Array.isArray(parsed.flows)) parsed.flows = [];
+      if (!Array.isArray(parsed.conditions)) parsed.conditions = [];
+
+      // バリデーション完了後、Diagram型として扱う
+      const validDiagram = parsed as Diagram;
+
+      // 現在のダイアグラムのIDを維持（インポートしたデータで上書きする場合）
       if (diagram) {
-        parsed.id = diagram.id;
-        parsed.updatedAt = new Date();
+        validDiagram.id = diagram.id;
+        validDiagram.updatedAt = new Date();
       }
 
-      setDiagram(parsed);
+      setDiagram(validDiagram);
       closeJsonModal();
     } catch (e) {
       setError(e instanceof Error ? e.message : "JSONの解析に失敗しました");
@@ -110,12 +115,12 @@ export function JsonModal() {
 
   return (
     <Dialog open={isJsonModalOpen} onOpenChange={closeJsonModal}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
+        <DialogHeader className="shrink-0">
           <DialogTitle>JSON エクスポート / インポート</DialogTitle>
         </DialogHeader>
 
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-4 shrink-0">
           <Button
             variant={mode === "export" ? "default" : "outline"}
             size="sm"
@@ -134,9 +139,9 @@ export function JsonModal() {
           </Button>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-3 flex flex-col flex-1 min-h-0 overflow-hidden">
           {mode === "import" && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <label className="flex-1">
                 <input
                   type="file"
@@ -165,12 +170,13 @@ export function JsonModal() {
                 ? "エクスポートボタンを押すとJSONが表示されます"
                 : "ここにJSONを貼り付けてください"
             }
-            rows={15}
-            className="font-mono text-xs"
+            className="font-mono text-xs flex-1 min-h-[200px] resize-none overflow-y-auto"
             readOnly={mode === "export"}
           />
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && (
+            <p className="text-sm text-destructive shrink-0">{error}</p>
+          )}
         </div>
 
         <DialogFooter>

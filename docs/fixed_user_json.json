@@ -1,0 +1,31 @@
+{
+  "id": "generated-uuid",
+  "name": "Todo App Flow",
+  "description": "User created flow",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "actors": [
+    { "id": "ui", "type": "component", "name": "App Component" },
+    { "id": "service", "type": "store", "name": "TodoService", "scope": "global" },
+    { "id": "storage", "type": "external", "name": "LocalStorage" }
+  ],
+  "states": [
+    { "id": "s_todos", "name": "todos (Signal)", "owner": "service" },
+    { "id": "s_input", "name": "newTodoTitle", "owner": "ui" }
+  ],
+  "flows": [
+    {
+      "id": "flow_add_todo",
+      "name": "Todo追加フロー",
+      "trigger": { "type": "userAction", "actor": "ui", "action": "Click [Add] / Press Enter" },
+      "steps": [
+        { "id": "st1", "type": "dispatch", "from": "ui", "to": "service", "action": "addTodo(title)" },
+        { "id": "st2", "type": "stateChange", "from": "service", "to": "service", "state": "s_todos", "action": "update(todos)" },
+        { "id": "st3", "type": "dispatch", "from": "service", "to": "storage", "action": "effect -> setItem(...)" },
+        { "id": "st4", "type": "subscribe", "from": "service", "to": "ui", "state": "s_todos", "action": "Re-render List" },
+        { "id": "st5", "type": "stateChange", "from": "ui", "to": "ui", "state": "s_input", "action": "reset('')" }
+      ]
+    }
+  ],
+  "conditions": []
+}

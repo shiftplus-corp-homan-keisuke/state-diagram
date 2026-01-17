@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Save, FileJson } from "lucide-react";
+import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getDiagramById } from "@/db/database";
@@ -50,6 +51,10 @@ export default function DiagramEditorPage() {
     setSaving(true);
     try {
       await saveDiagram();
+      toast.success("保存しました");
+    } catch (e) {
+      console.error(e);
+      toast.error("保存に失敗しました");
     } finally {
       setSaving(false);
     }
