@@ -20,17 +20,21 @@ const actorTypeColors: Record<string, string> = {
 };
 
 export function Sidebar() {
-  const { diagram, deleteActor, deleteState, deleteFlow } = useDiagramStore();
+  const { diagram, deleteActor, deleteState, deleteFlow, deleteCondition } =
+    useDiagramStore();
   const {
     isActorPanelOpen,
     isStatePanelOpen,
     isFlowPanelOpen,
+    isConditionPanelOpen,
     toggleActorPanel,
     toggleStatePanel,
     toggleFlowPanel,
+    toggleConditionPanel,
     openActorModal,
     openStateModal,
     openFlowModal,
+    openConditionModal,
     selectedActorId,
     selectedStateId,
     selectedFlowId,
@@ -238,6 +242,73 @@ export function Sidebar() {
                         onClick={(e) => {
                           e.stopPropagation();
                           deleteFlow(flow.id);
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <Separator />
+
+          {/* 条件セクション */}
+          <section>
+            <button
+              className="flex items-center justify-between w-full text-sm font-medium mb-2"
+              onClick={toggleConditionPanel}
+            >
+              <span className="flex items-center gap-1">
+                {isConditionPanelOpen ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+                条件
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {diagram.conditions.length}
+              </span>
+            </button>
+            {isConditionPanelOpen && (
+              <div className="space-y-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-xs"
+                  onClick={() => openConditionModal()}
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  追加
+                </Button>
+                {diagram.conditions.map((condition) => (
+                  <div
+                    key={condition.id}
+                    className="group flex items-center justify-between px-2 py-1 rounded text-sm cursor-pointer hover:bg-muted"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="truncate font-mono text-xs">
+                        {condition.expression}
+                      </span>
+                    </div>
+                    <div className="hidden group-hover:flex items-center gap-1">
+                      <button
+                        className="p-0.5 hover:text-primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openConditionModal(condition.id);
+                        }}
+                      >
+                        <Edit2 className="h-3 w-3" />
+                      </button>
+                      <button
+                        className="p-0.5 hover:text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteCondition(condition.id);
                         }}
                       >
                         <Trash2 className="h-3 w-3" />

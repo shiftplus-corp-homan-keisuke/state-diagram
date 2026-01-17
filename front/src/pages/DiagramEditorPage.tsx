@@ -7,11 +7,18 @@ import { getDiagramById } from "@/db/database";
 import { useDiagramStore } from "@/stores/diagramStore";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { SequenceDiagram } from "@/components/diagram/SequenceDiagram";
+import { ActorModal } from "@/components/editor/ActorModal";
+import { StateModal } from "@/components/editor/StateModal";
+import { FlowModal } from "@/components/editor/FlowModal";
+import { ConditionModal } from "@/components/editor/ConditionModal";
+import { JsonModal } from "@/components/editor/JsonModal";
+import { useUIStore } from "@/stores/uiStore";
 
 export default function DiagramEditorPage() {
   const { diagramId } = useParams({ from: "/diagram/$diagramId" });
   const navigate = useNavigate();
   const { diagram, setDiagram, saveDiagram } = useDiagramStore();
+  const { openJsonModal } = useUIStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingName, setEditingName] = useState(false);
@@ -105,7 +112,7 @@ export default function DiagramEditorPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => openJsonModal()}>
             <FileJson className="h-4 w-4 mr-1" />
             JSON
           </Button>
@@ -126,6 +133,13 @@ export default function DiagramEditorPage() {
           <SequenceDiagram />
         </main>
       </div>
+
+      {/* モーダル */}
+      <ActorModal />
+      <StateModal />
+      <FlowModal />
+      <ConditionModal />
+      <JsonModal />
     </div>
   );
 }

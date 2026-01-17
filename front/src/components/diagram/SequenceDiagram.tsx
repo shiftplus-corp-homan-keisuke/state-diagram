@@ -60,18 +60,27 @@ export function SequenceDiagram() {
       draggable: true,
     }));
 
+    // アクターIDからX座標へのマップを作成
+    const actorPositions = new Map<string, number>();
+    diagram.actors.forEach((actor, index) => {
+      actorPositions.set(actor.id, index * (ACTOR_WIDTH + ACTOR_GAP));
+    });
+
     // フローからエッジを生成
     const edges: Edge[] = [];
     let stepIndex = 0;
 
     diagram.flows.forEach((flow) => {
       flow.steps.forEach((step) => {
-        if (step.from && step.to && step.from !== step.to) {
+        if (step.from && step.to) {
           // 関連する状態のスコープを取得
           const relatedState = step.state
             ? diagram.states.find((s) => s.id === step.state)
             : null;
           const scope = relatedState?.scope ?? "local";
+
+          const sourceX = actorPositions.get(step.from) ?? 0;
+          const targetX = actorPositions.get(step.to) ?? 0;
 
           edges.push({
             id: `${flow.id}-${step.id}`,
@@ -83,6 +92,8 @@ export function SequenceDiagram() {
               stepType: step.type,
               scope,
               yPosition: START_Y + stepIndex * STEP_HEIGHT,
+              sourceX,
+              targetX,
             },
             style: scopeEdgeStyles[scope],
             animated: step.type === "subscribe",

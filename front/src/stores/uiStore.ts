@@ -12,17 +12,20 @@ interface UIStore {
   isActorPanelOpen: boolean;
   isStatePanelOpen: boolean;
   isFlowPanelOpen: boolean;
+  isConditionPanelOpen: boolean;
 
   // モーダル状態
   isActorModalOpen: boolean;
   isStateModalOpen: boolean;
   isFlowModalOpen: boolean;
+  isConditionModalOpen: boolean;
   isJsonModalOpen: boolean;
 
   // 編集対象（nullなら新規作成）
   editingActorId: string | null;
   editingStateId: string | null;
   editingFlowId: string | null;
+  editingConditionId: string | null;
 
   // 選択操作
   selectActor: (id: string | null) => void;
@@ -33,6 +36,7 @@ interface UIStore {
   toggleActorPanel: () => void;
   toggleStatePanel: () => void;
   toggleFlowPanel: () => void;
+  toggleConditionPanel: () => void;
 
   // モーダル操作
   openActorModal: (editId?: string) => void;
@@ -41,6 +45,8 @@ interface UIStore {
   closeStateModal: () => void;
   openFlowModal: (editId?: string) => void;
   closeFlowModal: () => void;
+  openConditionModal: (editId?: string) => void;
+  closeConditionModal: () => void;
   openJsonModal: () => void;
   closeJsonModal: () => void;
 }
@@ -53,15 +59,18 @@ export const useUIStore = create<UIStore>((set) => ({
   isActorPanelOpen: true,
   isStatePanelOpen: true,
   isFlowPanelOpen: true,
+  isConditionPanelOpen: false,
 
   isActorModalOpen: false,
   isStateModalOpen: false,
   isFlowModalOpen: false,
+  isConditionModalOpen: false,
   isJsonModalOpen: false,
 
   editingActorId: null,
   editingStateId: null,
   editingFlowId: null,
+  editingConditionId: null,
 
   selectActor: (id) => set({ selectedActorId: id }),
   selectState: (id) => set({ selectedStateId: id }),
@@ -72,6 +81,8 @@ export const useUIStore = create<UIStore>((set) => ({
   toggleStatePanel: () =>
     set((s) => ({ isStatePanelOpen: !s.isStatePanelOpen })),
   toggleFlowPanel: () => set((s) => ({ isFlowPanelOpen: !s.isFlowPanelOpen })),
+  toggleConditionPanel: () =>
+    set((s) => ({ isConditionPanelOpen: !s.isConditionPanelOpen })),
 
   openActorModal: (editId) =>
     set({ isActorModalOpen: true, editingActorId: editId ?? null }),
@@ -82,6 +93,10 @@ export const useUIStore = create<UIStore>((set) => ({
   openFlowModal: (editId) =>
     set({ isFlowModalOpen: true, editingFlowId: editId ?? null }),
   closeFlowModal: () => set({ isFlowModalOpen: false, editingFlowId: null }),
+  openConditionModal: (editId) =>
+    set({ isConditionModalOpen: true, editingConditionId: editId ?? null }),
+  closeConditionModal: () =>
+    set({ isConditionModalOpen: false, editingConditionId: null }),
   openJsonModal: () => set({ isJsonModalOpen: true }),
   closeJsonModal: () => set({ isJsonModalOpen: false }),
 }));
