@@ -93,7 +93,8 @@ JSONファイルの一番外側（ルート）には、必ず `id` と `name` �
     - `type: "subscribe"`, `from: "store"`, `to: "ui"`, `state: "s_todos"`, `action: "render()"`
     - ※青い破線でフィードバックを表現します。
 4.  **Effect / API Call (副作用)**: 必要に応じて外部システムの呼び出し。
-    - `type: "dispatch"`, `from: "store"`, `to: "api"`, `action: "post(...)"`
+    - `type: "dispatch"`, `from: "store"`, `to: "api"`, `action: "post(...)"`, `isAsync: true`
+    - ※`isAsync: true`をつけると「⏳ async」マーカーが表示されます。
 
 ### 例
 

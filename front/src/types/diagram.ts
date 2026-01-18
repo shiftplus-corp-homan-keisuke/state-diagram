@@ -43,6 +43,7 @@ export interface FlowStep {
   payload?: string;
   description?: string;
   condition?: string;
+  isAsync?: boolean;
 }
 
 /** 条件分岐 */

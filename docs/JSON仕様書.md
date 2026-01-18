@@ -107,6 +107,7 @@ interface FlowStep {
   payload?: string; // ペイロードの説明
   description?: string; // 説明
   condition?: string; // 条件ID
+  isAsync?: boolean; // 非同期処理フラグ
 }
 ```
 

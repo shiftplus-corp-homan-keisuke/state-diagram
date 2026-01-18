@@ -41,6 +41,7 @@ export function Sidebar() {
     selectActor,
     selectState,
     selectFlow,
+    focusFlow,
   } = useUIStore();
 
   if (!diagram) return null;
@@ -243,6 +244,8 @@ export function Sidebar() {
                       selectedFlowId === flow.id ? "bg-muted" : ""
                     }`}
                     onClick={() => selectFlow(flow.id)}
+                    onDoubleClick={() => focusFlow(flow.id)}
+                    title="ダブルクリックでジャンプ"
                   >
                     <span className="truncate">{flow.name}</span>
                     <div className="hidden group-hover:flex items-center gap-1">

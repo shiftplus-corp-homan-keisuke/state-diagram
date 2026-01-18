@@ -11,6 +11,8 @@ interface MessageEdgeData extends Record<string, unknown> {
   targetX?: number;
   stateName?: string;
   targetAction?: string;
+  conditionExpression?: string;
+  isAsync?: boolean;
 }
 
 const stepTypeLabels: Record<string, string> = {
@@ -34,6 +36,8 @@ export const MessageEdge = memo(function MessageEdge({
   const stepType = data?.stepType ?? "dispatch";
   const stateName = data?.stateName;
   const targetAction = data?.targetAction;
+  const conditionExpression = data?.conditionExpression;
+  const isAsync = data?.isAsync;
 
   // ラベルテキストの構築
   let displayLabel = label;
@@ -177,6 +181,34 @@ export const MessageEdge = memo(function MessageEdge({
               className={`absolute bottom-full left-1/2 -translate-x-1/2 -mb-px border-4 border-transparent ${bubbleStyle.tri}`}
             ></div>
             {targetAction}
+          </div>
+        </EdgeLabelRenderer>
+      )}
+
+      {/* 条件バッジ（エッジの開始位置付近） */}
+      {conditionExpression && (
+        <EdgeLabelRenderer>
+          <div
+            className="absolute px-2 py-0.5 rounded-full text-xs font-medium shadow-sm pointer-events-all nodrag nopan z-30 whitespace-nowrap bg-amber-500 text-white border border-amber-600"
+            style={{
+              transform: `translate(-50%, -50%) translate(${startX + 50}px, ${yPosition}px)`,
+            }}
+          >
+            🔀 if: {conditionExpression}
+          </div>
+        </EdgeLabelRenderer>
+      )}
+
+      {/* 非同期バッジ（エッジの終了位置付近） */}
+      {isAsync && (
+        <EdgeLabelRenderer>
+          <div
+            className="absolute px-2 py-0.5 rounded-full text-xs font-medium shadow-sm pointer-events-all nodrag nopan z-30 whitespace-nowrap bg-purple-500 text-white border border-purple-600"
+            style={{
+              transform: `translate(-50%, -50%) translate(${endX - 40}px, ${yPosition}px)`,
+            }}
+          >
+            ⏳ async
           </div>
         </EdgeLabelRenderer>
       )}

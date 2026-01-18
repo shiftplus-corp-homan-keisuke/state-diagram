@@ -400,6 +400,20 @@ export function FlowModal() {
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="checkbox"
+                      id={`async-${step.id}`}
+                      checked={step.isAsync || false}
+                      onChange={(e) =>
+                        updateStep(index, { isAsync: e.target.checked })
+                      }
+                      className="h-4 w-4"
+                    />
+                    <Label htmlFor={`async-${step.id}`} className="text-xs">
+                      ⏳ 非同期処理
+                    </Label>
+                  </div>
                 </div>
               ))}
             </div>

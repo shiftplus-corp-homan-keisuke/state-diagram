@@ -1,19 +1,21 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useEffect } from "react";
 import {
   ReactFlow,
+  ReactFlowProvider,
   Background,
   Controls,
   MiniMap,
   useNodesState,
   useEdgesState,
+  useReactFlow,
   type Node,
   type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useDiagramStore } from "@/stores/diagramStore";
+import { useUIStore } from "@/stores/uiStore";
 import { ActorNode } from "./nodes/ActorNode";
 import { MessageEdge } from "./edges/MessageEdge";
-import type { StateScope } from "@/types/diagram";
 
 const nodeTypes = {
   actor: ActorNode,
@@ -35,10 +37,27 @@ const getColor = (type: string, scope?: string) => {
   return "#64748b"; // slate-500 (default/external)
 };
 
-export function SequenceDiagram() {
+function InnerSequenceDiagram() {
   const { diagram } = useDiagramStore();
+  const { focusFlowId, clearFocusFlow } = useUIStore();
+  const { fitView } = useReactFlow();
 
-  // ノードとエッジを計算
+  // フローフォーカス時にズーム
+  useEffect(() => {
+    if (focusFlowId) {
+      // フローヘッダーノードにフィット
+      const nodeId = `flow-header-${focusFlowId}`;
+      setTimeout(() => {
+        fitView({
+          nodes: [{ id: nodeId }],
+          duration: 500,
+          padding: 0.5,
+        });
+        clearFocusFlow();
+      }, 100);
+    }
+  }, [focusFlowId, fitView, clearFocusFlow]);
+
   const { initialNodes, initialEdges } = useMemo(() => {
     if (!diagram) {
       return { initialNodes: [], initialEdges: [] };
@@ -47,7 +66,7 @@ export function SequenceDiagram() {
     const ACTOR_WIDTH = 150;
     const ACTOR_GAP = 50;
     const STEP_HEIGHT = 60;
-    const START_Y = 100;
+    const START_Y = 150; // アクターとフローヘッダー間の余白
 
     // 全ステップ数を計算してライフラインの高さを決定
     const totalSteps = diagram.flows.reduce(
@@ -80,9 +99,46 @@ export function SequenceDiagram() {
     // フローからエッジとトリガーノードを生成
     const edges: Edge[] = [];
     const triggerNodes: Node[] = []; // トリガーノード用配列
+    const flowHeaderNodes: Node[] = []; // フローヘッダーノード用配列
     let stepIndex = 0;
 
-    diagram.flows.forEach((flow) => {
+    // 全アクターの幅を計算（ヘッダーの幅決定用）
+    const totalWidth = diagram.actors.length * (ACTOR_WIDTH + ACTOR_GAP);
+    const FLOW_HEADER_HEIGHT = 30;
+
+    diagram.flows.forEach((flow, flowIndex) => {
+      // フローヘッダーノードの生成（複数フロー時のみ）
+      if (diagram.flows.length > 1) {
+        const headerY =
+          START_Y + stepIndex * STEP_HEIGHT - FLOW_HEADER_HEIGHT - 10;
+
+        flowHeaderNodes.push({
+          id: `flow-header-${flow.id}`,
+          type: "default",
+          position: { x: -20, y: headerY },
+          data: { label: `📌 ${flow.name}` },
+          style: {
+            width: totalWidth + 40,
+            height: FLOW_HEADER_HEIGHT,
+            background: flowIndex % 2 === 0 ? "#eff6ff" : "#f0fdf4", // 交互に青と緑
+            border:
+              flowIndex % 2 === 0 ? "2px solid #3b82f6" : "2px solid #22c55e",
+            borderRadius: "8px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: "bold",
+            fontSize: "14px",
+            color: flowIndex % 2 === 0 ? "#1d4ed8" : "#15803d",
+          },
+          draggable: false,
+          selectable: false,
+        });
+
+        // ヘッダー分のスペースを追加
+        stepIndex += 0.5;
+      }
+
       // トリガーノードの生成
       if (
         flow.trigger &&
@@ -124,6 +180,12 @@ export function SequenceDiagram() {
             : null;
           const stateName = relatedState?.name;
 
+          // 条件分岐の解決
+          const conditionExpression = step.condition
+            ? diagram.conditions.find((c) => c.id === step.condition)
+                ?.expression
+            : undefined;
+
           const sourceX = actorPositions.get(step.from) ?? 0;
           const targetX = actorPositions.get(step.to) ?? 0;
 
@@ -156,6 +218,8 @@ export function SequenceDiagram() {
               targetType: displayType,
               targetScope: displayScope,
               stateName,
+              conditionExpression,
+              isAsync: step.isAsync,
               yPosition: START_Y + stepIndex * STEP_HEIGHT,
               sourceX,
               targetX,
@@ -170,11 +234,11 @@ export function SequenceDiagram() {
           stepIndex++;
         }
       });
-      stepIndex++; // フロー間の間隔
+      stepIndex += diagram.flows.length > 1 ? 1.5 : 1; // 複数フロー時はより大きな間隔
     });
 
     return {
-      initialNodes: [...actorNodes, ...triggerNodes],
+      initialNodes: [...actorNodes, ...flowHeaderNodes, ...triggerNodes],
       initialEdges: edges,
     };
   }, [diagram]);
@@ -244,5 +308,14 @@ export function SequenceDiagram() {
         />
       </ReactFlow>
     </div>
+  );
+}
+
+// ReactFlowProviderでラップしてエクスポート
+export function SequenceDiagram() {
+  return (
+    <ReactFlowProvider>
+      <InnerSequenceDiagram />
+    </ReactFlowProvider>
   );
 }

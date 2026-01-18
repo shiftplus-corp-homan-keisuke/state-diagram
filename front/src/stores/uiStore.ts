@@ -7,6 +7,8 @@ interface UIStore {
   selectedStateId: string | null;
   /** 現在選択中のフローID */
   selectedFlowId: string | null;
+  /** フォーカス対象のフローID（一時的、ズーム後にクリア） */
+  focusFlowId: string | null;
 
   // サイドバーパネルの開閉状態
   isActorPanelOpen: boolean;
@@ -32,6 +34,10 @@ interface UIStore {
   selectState: (id: string | null) => void;
   selectFlow: (id: string | null) => void;
 
+  // フロージャンプ
+  focusFlow: (id: string) => void;
+  clearFocusFlow: () => void;
+
   // パネル開閉
   toggleActorPanel: () => void;
   toggleStatePanel: () => void;
@@ -55,6 +61,7 @@ export const useUIStore = create<UIStore>((set) => ({
   selectedActorId: null,
   selectedStateId: null,
   selectedFlowId: null,
+  focusFlowId: null,
 
   isActorPanelOpen: true,
   isStatePanelOpen: true,
@@ -75,6 +82,9 @@ export const useUIStore = create<UIStore>((set) => ({
   selectActor: (id) => set({ selectedActorId: id }),
   selectState: (id) => set({ selectedStateId: id }),
   selectFlow: (id) => set({ selectedFlowId: id }),
+
+  focusFlow: (id) => set({ focusFlowId: id, selectedFlowId: id }),
+  clearFocusFlow: () => set({ focusFlowId: null }),
 
   toggleActorPanel: () =>
     set((s) => ({ isActorPanelOpen: !s.isActorPanelOpen })),
