@@ -1,0 +1,32 @@
+{
+  "id": "test-with-condition",
+  "name": "条件分岐テスト",
+  "description": "条件分岐の可視化テスト用",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "actors": [
+    { "id": "ui", "type": "component", "name": "LoginForm" },
+    { "id": "store", "type": "store", "name": "AuthStore", "scope": "global" },
+    { "id": "api", "type": "service", "name": "AuthAPI" }
+  ],
+  "states": [
+    { "id": "s_user", "name": "currentUser", "owner": "store" },
+    { "id": "s_loading", "name": "isLoading", "owner": "store" }
+  ],
+  "conditions": [
+    { "id": "c_valid", "expression": "isValid(input)", "description": "入力が有効な場合" }
+  ],
+  "flows": [
+    {
+      "id": "flow_login",
+      "name": "ログインフロー",
+      "trigger": { "type": "userAction", "actor": "ui", "action": "Click Login" },
+      "steps": [
+        { "id": "st1", "type": "dispatch", "from": "ui", "to": "store", "action": "login(credentials)", "condition": "c_valid" },
+        { "id": "st2", "type": "dispatch", "from": "store", "to": "api", "action": "POST /auth/login" },
+        { "id": "st3", "type": "stateChange", "from": "store", "to": "store", "state": "s_user", "action": "setUser(response)" },
+        { "id": "st4", "type": "subscribe", "from": "store", "to": "ui", "state": "s_user", "action": "redirect to dashboard" }
+      ]
+    }
+  ]
+}

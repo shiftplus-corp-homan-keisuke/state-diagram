@@ -1,0 +1,31 @@
+{
+  "id": "async-test",
+  "name": "非同期テスト",
+  "description": "Phase 4: 非同期マーカーのテスト用",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "actors": [
+    { "id": "ui", "type": "component", "name": "DataTable" },
+    { "id": "store", "type": "store", "name": "DataStore", "scope": "global" },
+    { "id": "api", "type": "service", "name": "DataAPI" }
+  ],
+  "states": [
+    { "id": "s_data", "name": "items", "owner": "store" },
+    { "id": "s_loading", "name": "isLoading", "owner": "store" }
+  ],
+  "conditions": [],
+  "flows": [
+    {
+      "id": "flow_fetch",
+      "name": "データ取得フロー",
+      "trigger": { "type": "lifecycle", "actor": "ui", "action": "onMount" },
+      "steps": [
+        { "id": "st1", "type": "dispatch", "from": "ui", "to": "store", "action": "fetchData()" },
+        { "id": "st2", "type": "stateChange", "from": "store", "to": "store", "state": "s_loading", "action": "setLoading(true)" },
+        { "id": "st3", "type": "dispatch", "from": "store", "to": "api", "action": "GET /api/data", "isAsync": true },
+        { "id": "st4", "type": "stateChange", "from": "store", "to": "store", "state": "s_data", "action": "setItems(response)" },
+        { "id": "st5", "type": "subscribe", "from": "store", "to": "ui", "state": "s_data", "action": "render()" }
+      ]
+    }
+  ]
+}
