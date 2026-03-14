@@ -1,0 +1,123 @@
+- generic:
+  - generic:
+    - generic:
+      - banner:
+        - generic:
+          - button:
+            - img
+            - text: 一覧
+          - heading [level=1]: 新しいダイアグラム
+        - generic:
+          - generic: 保存済み
+          - button:
+            - img
+            - text: JSON
+          - button:
+            - img
+            - text: 保存
+      - generic:
+        - complementary:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - button:
+                      - generic:
+                        - img
+                        - text: アクター
+                      - generic: "0"
+                    - generic:
+                      - button:
+                        - img
+                        - text: 追加
+                  - generic:
+                    - button:
+                      - generic:
+                        - img
+                        - text: 状態
+                      - generic: "0"
+                    - generic:
+                      - button:
+                        - img
+                        - text: 追加
+                  - generic:
+                    - button:
+                      - generic:
+                        - img
+                        - text: フロー
+                      - generic: "0"
+                    - generic:
+                      - button:
+                        - img
+                        - text: 追加
+                  - generic:
+                    - button:
+                      - generic:
+                        - img
+                        - text: 条件
+                      - generic: "0"
+          - generic:
+            - paragraph: スコープ凡例
+            - generic:
+              - generic: 📍 ローカル
+              - generic: 🌲 サブツリー
+              - generic: 🌍 グローバル
+        - main:
+          - generic:
+            - paragraph: アクターがありません
+            - paragraph: サイドバーからアクターを追加してください
+  - dialog "JSON エクスポート / インポート" [ref=e85]:
+    - generic [ref=e86]:
+      - heading "JSON エクスポート / インポート" [level=2] [ref=e87]
+      - paragraph [ref=e88]: ダイアグラム JSON の書き出しと取り込みを行います。インポート時は検証結果を確認してから適用してください。
+    - generic [ref=e89]:
+      - button "エクスポート" [ref=e90]:
+        - img
+        - text: エクスポート
+      - button "インポート" [ref=e91]:
+        - img
+        - text: インポート
+    - generic [ref=e92]:
+      - generic [ref=e98]:
+        - generic [ref=e100] [cursor=pointer]:
+          - img
+          - text: ファイルを選択
+        - generic [ref=e101]: または下に直接JSONを貼り付け
+      - textbox "ここにJSONを貼り付けてください" [active] [ref=e102]: "{\"id\":\"multi-flow-test\",\"name\":\"複数フローテスト\",\"description\":\"複数フローの視覚的分離テスト用\",\"createdAt\":\"2024-01-01T00:00:00.000Z\",\"updatedAt\":\"2024-01-01T00:00:00.000Z\",\"actors\":[{\"id\":\"ui\",\"type\":\"component\",\"name\":\"AppComponent\"},{\"id\":\"store\",\"type\":\"store\",\"name\":\"UserStore\",\"scope\":\"global\",\"description\":\"ユーザー情報を管理するグローバルストア\"},{\"id\":\"api\",\"type\":\"service\",\"name\":\"UserAPI\"}],\"states\":[{\"id\":\"s_user\",\"name\":\"currentUser\",\"owner\":\"store\",\"dataType\":\"User | null\"},{\"id\":\"s_list\",\"name\":\"userList\",\"owner\":\"store\",\"dataType\":\"User[]\"}],\"conditions\":[],\"flows\":[{\"id\":\"flow_login\",\"name\":\"ログインフロー\",\"trigger\":{\"type\":\"userAction\",\"actor\":\"ui\",\"action\":\"Click Login\"},\"steps\":[{\"id\":\"st1\",\"type\":\"dispatch\",\"from\":\"ui\",\"to\":\"store\",\"action\":\"login()\"},{\"id\":\"st2\",\"type\":\"dispatch\",\"from\":\"store\",\"to\":\"api\",\"action\":\"POST /login\",\"isAsync\":true},{\"id\":\"st3\",\"type\":\"stateChange\",\"from\":\"store\",\"to\":\"store\",\"state\":\"s_user\",\"action\":\"setUser()\"},{\"id\":\"st4\",\"type\":\"subscribe\",\"from\":\"store\",\"to\":\"ui\",\"state\":\"s_user\",\"action\":\"render()\"}]},{\"id\":\"flow_logout\",\"name\":\"ログアウトフロー\",\"trigger\":{\"type\":\"userAction\",\"actor\":\"ui\",\"action\":\"Click Logout\"},\"steps\":[{\"id\":\"st5\",\"type\":\"dispatch\",\"from\":\"ui\",\"to\":\"store\",\"action\":\"logout()\"},{\"id\":\"st6\",\"type\":\"stateChange\",\"from\":\"store\",\"to\":\"store\",\"state\":\"s_user\",\"action\":\"clearUser()\"},{\"id\":\"st7\",\"type\":\"subscribe\",\"from\":\"store\",\"to\":\"ui\",\"state\":\"s_user\",\"action\":\"redirect()\"}]},{\"id\":\"flow_fetch_users\",\"name\":\"ユーザー一覧取得フロー\",\"trigger\":{\"type\":\"lifecycle\",\"actor\":\"ui\",\"action\":\"onInit\"},\"steps\":[{\"id\":\"st8\",\"type\":\"dispatch\",\"from\":\"ui\",\"to\":\"store\",\"action\":\"fetchUsers()\"},{\"id\":\"st9\",\"type\":\"dispatch\",\"from\":\"store\",\"to\":\"api\",\"action\":\"GET /users\",\"isAsync\":true},{\"id\":\"st10\",\"type\":\"stateChange\",\"from\":\"store\",\"to\":\"store\",\"state\":\"s_list\",\"action\":\"setUsers()\"},{\"id\":\"st11\",\"type\":\"subscribe\",\"from\":\"store\",\"to\":\"ui\",\"state\":\"s_list\",\"action\":\"renderList()\"}]}]}"
+      - generic [ref=e103]:
+        - generic [ref=e104]:
+          - generic [ref=e105]: success
+          - generic [ref=e106]: インポート結果
+        - generic [ref=e107]:
+          - generic [ref=e108]:
+            - generic [ref=e109]: Actor
+            - generic [ref=e110]: "3"
+          - generic [ref=e111]:
+            - generic [ref=e112]: State
+            - generic [ref=e113]: "2"
+          - generic [ref=e114]:
+            - generic [ref=e115]: Flow
+            - generic [ref=e116]: "3"
+          - generic [ref=e117]:
+            - generic [ref=e118]: Condition
+            - generic [ref=e119]: "0"
+          - generic [ref=e120]:
+            - generic [ref=e121]: Error
+            - generic [ref=e122]: "0"
+          - generic [ref=e123]:
+            - generic [ref=e124]: Warning
+            - generic [ref=e125]: "0"
+          - generic [ref=e126]:
+            - generic [ref=e127]: Skip
+            - generic [ref=e128]: "0"
+          - generic [ref=e129]:
+            - generic [ref=e130]: Fix
+            - generic [ref=e131]: "0"
+        - paragraph [ref=e134]: インポート可能です
+    - generic [ref=e94]:
+      - button "閉じる" [ref=e95]
+      - button "適用" [ref=e135]
+    - button "Close" [ref=e96]:
+      - img
+      - generic [ref=e97]: Close

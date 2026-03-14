@@ -75,6 +75,31 @@ export interface Diagram {
   conditions: Condition[];
 }
 
+export type DiagramImportStatus = "success" | "warning" | "error";
+
+export interface DiagramImportMessage {
+  level: DiagramImportStatus;
+  text: string;
+}
+
+export interface DiagramImportSummary {
+  actor: number;
+  state: number;
+  flow: number;
+  condition: number;
+  error: number;
+  warning: number;
+  skip: number;
+  fix: number;
+}
+
+export interface DiagramImportResult {
+  status: DiagramImportStatus;
+  diagram: Diagram | null;
+  summary: DiagramImportSummary;
+  messages: DiagramImportMessage[];
+}
+
 /** 新規ダイアグラム作成用 */
 export type CreateDiagramInput = Omit<
   Diagram,

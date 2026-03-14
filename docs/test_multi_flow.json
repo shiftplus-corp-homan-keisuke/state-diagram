@@ -1,17 +1,33 @@
 {
   "id": "multi-flow-test",
   "name": "複数フローテスト",
-  "description": "Phase 2: フローの視覚的分離テスト用",
+  "description": "複数フローの視覚的分離テスト用",
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z",
   "actors": [
     { "id": "ui", "type": "component", "name": "AppComponent" },
-    { "id": "store", "type": "store", "name": "UserStore", "scope": "global" },
+    {
+      "id": "store",
+      "type": "store",
+      "name": "UserStore",
+      "scope": "global",
+      "description": "ユーザー情報を管理するグローバルストア"
+    },
     { "id": "api", "type": "service", "name": "UserAPI" }
   ],
   "states": [
-    { "id": "s_user", "name": "currentUser", "owner": "store" },
-    { "id": "s_list", "name": "userList", "owner": "store" }
+    {
+      "id": "s_user",
+      "name": "currentUser",
+      "owner": "store",
+      "dataType": "User | null"
+    },
+    {
+      "id": "s_list",
+      "name": "userList",
+      "owner": "store",
+      "dataType": "User[]"
+    }
   ],
   "conditions": [],
   "flows": [
@@ -20,10 +36,37 @@
       "name": "ログインフロー",
       "trigger": { "type": "userAction", "actor": "ui", "action": "Click Login" },
       "steps": [
-        { "id": "st1", "type": "dispatch", "from": "ui", "to": "store", "action": "login()" },
-        { "id": "st2", "type": "dispatch", "from": "store", "to": "api", "action": "POST /login" },
-        { "id": "st3", "type": "stateChange", "from": "store", "to": "store", "state": "s_user", "action": "setUser()" },
-        { "id": "st4", "type": "subscribe", "from": "store", "to": "ui", "state": "s_user", "action": "render()" }
+        {
+          "id": "st1",
+          "type": "dispatch",
+          "from": "ui",
+          "to": "store",
+          "action": "login()"
+        },
+        {
+          "id": "st2",
+          "type": "dispatch",
+          "from": "store",
+          "to": "api",
+          "action": "POST /login",
+          "isAsync": true
+        },
+        {
+          "id": "st3",
+          "type": "stateChange",
+          "from": "store",
+          "to": "store",
+          "state": "s_user",
+          "action": "setUser()"
+        },
+        {
+          "id": "st4",
+          "type": "subscribe",
+          "from": "store",
+          "to": "ui",
+          "state": "s_user",
+          "action": "render()"
+        }
       ]
     },
     {
@@ -31,9 +74,29 @@
       "name": "ログアウトフロー",
       "trigger": { "type": "userAction", "actor": "ui", "action": "Click Logout" },
       "steps": [
-        { "id": "st5", "type": "dispatch", "from": "ui", "to": "store", "action": "logout()" },
-        { "id": "st6", "type": "stateChange", "from": "store", "to": "store", "state": "s_user", "action": "clearUser()" },
-        { "id": "st7", "type": "subscribe", "from": "store", "to": "ui", "state": "s_user", "action": "redirect()" }
+        {
+          "id": "st5",
+          "type": "dispatch",
+          "from": "ui",
+          "to": "store",
+          "action": "logout()"
+        },
+        {
+          "id": "st6",
+          "type": "stateChange",
+          "from": "store",
+          "to": "store",
+          "state": "s_user",
+          "action": "clearUser()"
+        },
+        {
+          "id": "st7",
+          "type": "subscribe",
+          "from": "store",
+          "to": "ui",
+          "state": "s_user",
+          "action": "redirect()"
+        }
       ]
     },
     {
@@ -41,10 +104,37 @@
       "name": "ユーザー一覧取得フロー",
       "trigger": { "type": "lifecycle", "actor": "ui", "action": "onInit" },
       "steps": [
-        { "id": "st8", "type": "dispatch", "from": "ui", "to": "store", "action": "fetchUsers()" },
-        { "id": "st9", "type": "dispatch", "from": "store", "to": "api", "action": "GET /users" },
-        { "id": "st10", "type": "stateChange", "from": "store", "to": "store", "state": "s_list", "action": "setUsers()" },
-        { "id": "st11", "type": "subscribe", "from": "store", "to": "ui", "state": "s_list", "action": "render list()" }
+        {
+          "id": "st8",
+          "type": "dispatch",
+          "from": "ui",
+          "to": "store",
+          "action": "fetchUsers()"
+        },
+        {
+          "id": "st9",
+          "type": "dispatch",
+          "from": "store",
+          "to": "api",
+          "action": "GET /users",
+          "isAsync": true
+        },
+        {
+          "id": "st10",
+          "type": "stateChange",
+          "from": "store",
+          "to": "store",
+          "state": "s_list",
+          "action": "setUsers()"
+        },
+        {
+          "id": "st11",
+          "type": "subscribe",
+          "from": "store",
+          "to": "ui",
+          "state": "s_list",
+          "action": "renderList()"
+        }
       ]
     }
   ]

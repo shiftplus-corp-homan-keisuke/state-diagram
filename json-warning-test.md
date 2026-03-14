@@ -1,0 +1,232 @@
+- generic:
+  - generic:
+    - generic:
+      - banner:
+        - generic:
+          - button:
+            - img
+            - text: 一覧
+          - heading [level=1]: 複数フローテスト
+        - generic:
+          - generic: 変更あり
+          - button:
+            - img
+            - text: JSON
+          - button:
+            - img
+            - text: 保存
+      - generic:
+        - complementary:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - button:
+                      - generic:
+                        - img
+                        - text: アクター
+                      - generic: "3"
+                    - generic:
+                      - button:
+                        - img
+                        - text: 追加
+                      - generic:
+                        - generic:
+                          - generic: AppComponent
+                      - generic:
+                        - generic:
+                          - generic: UserStore
+                      - generic:
+                        - generic:
+                          - generic: UserAPI
+                  - generic:
+                    - button:
+                      - generic:
+                        - img
+                        - text: 状態
+                      - generic: "2"
+                    - generic:
+                      - button:
+                        - img
+                        - text: 追加
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: 🌍
+                            - generic: UserStore
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: currentUser
+                            - generic:
+                              - generic:
+                                - generic: userList
+                  - generic:
+                    - button:
+                      - generic:
+                        - img
+                        - text: フロー
+                      - generic: "3"
+                    - generic:
+                      - button:
+                        - img
+                        - text: 追加
+                      - generic:
+                        - generic: ログインフロー
+                      - generic:
+                        - generic: ログアウトフロー
+                      - generic:
+                        - generic: ユーザー一覧取得フロー
+                  - generic:
+                    - button:
+                      - generic:
+                        - img
+                        - text: 条件
+                      - generic: "0"
+          - generic:
+            - paragraph: スコープ凡例
+            - generic:
+              - generic: 📍 ローカル
+              - generic: 🌲 サブツリー
+              - generic: 🌍 グローバル
+        - main:
+          - generic:
+            - application:
+              - generic:
+                - generic:
+                  - generic:
+                    - img:
+                      - group [ref=e253] [cursor=pointer]
+                    - img:
+                      - group [ref=e254] [cursor=pointer]
+                    - img:
+                      - group [ref=e255] [cursor=pointer]
+                    - img:
+                      - group [ref=e256] [cursor=pointer]
+                    - img:
+                      - group [ref=e257] [cursor=pointer]
+                    - img:
+                      - group [ref=e258] [cursor=pointer]
+                    - img:
+                      - group [ref=e259] [cursor=pointer]
+                    - img:
+                      - group [ref=e260] [cursor=pointer]
+                    - img:
+                      - group [ref=e261] [cursor=pointer]
+                    - img:
+                      - group [ref=e262] [cursor=pointer]
+                    - img:
+                      - group [ref=e263] [cursor=pointer]
+                    - generic:
+                      - generic: login()
+                      - generic: POST /login
+                      - generic: ⏳ async
+                      - generic: ⟳currentUser ← setUser()
+                      - generic: "◎Notify: currentUser"
+                      - generic: render()
+                      - generic: logout()
+                      - generic: ⟳currentUser ← clearUser()
+                      - generic: "◎Notify: currentUser"
+                      - generic: redirect()
+                      - generic: fetchUsers()
+                      - generic: GET /users
+                      - generic: ⏳ async
+                      - generic: ⟳userList ← setUsers()
+                      - generic: "◎Notify: userList"
+                      - generic: renderList()
+                    - generic:
+                      - group [ref=e184]:
+                        - generic [ref=e187]:
+                          - generic [ref=e188]: 🧩
+                          - generic [ref=e189]:
+                            - paragraph [ref=e190]: AppComponent
+                            - paragraph [ref=e191]: component
+                      - group [ref=e194]:
+                        - generic [ref=e197]:
+                          - generic [ref=e198]: 📦
+                          - generic [ref=e199]:
+                            - paragraph [ref=e200]: UserStore
+                            - paragraph [ref=e201]: store (global)
+                      - group [ref=e204]:
+                        - generic [ref=e207]:
+                          - generic [ref=e208]: ⚙️
+                          - generic [ref=e209]:
+                            - paragraph [ref=e210]: UserAPI
+                            - paragraph [ref=e211]: service
+                      - group: 📌 ログインフロー
+                      - group: 📌 ログアウトフロー
+                      - group: 📌 ユーザー一覧取得フロー
+                      - group [ref=e220] [cursor=pointer]: "Trigger: Click Login"
+                      - group [ref=e222] [cursor=pointer]: "Trigger: Click Logout"
+                      - group [ref=e224] [cursor=pointer]: "Trigger: onInit"
+              - img
+              - generic:
+                - button:
+                  - img
+                - button:
+                  - img
+                - button:
+                  - img
+                - button:
+                  - img
+              - generic:
+                - img
+              - generic:
+                - link:
+                  - /url: https://reactflow.dev
+                  - text: React Flow
+  - dialog "JSON エクスポート / インポート" [ref=e265]:
+    - generic [ref=e266]:
+      - heading "JSON エクスポート / インポート" [level=2] [ref=e267]
+      - paragraph [ref=e268]: ダイアグラム JSON の書き出しと取り込みを行います。インポート時は検証結果を確認してから適用してください。
+    - generic [ref=e269]:
+      - button "エクスポート" [ref=e270]:
+        - img
+        - text: エクスポート
+      - button "インポート" [ref=e271]:
+        - img
+        - text: インポート
+    - generic [ref=e272]:
+      - generic [ref=e273]:
+        - generic [ref=e275] [cursor=pointer]:
+          - img
+          - text: ファイルを選択
+        - generic [ref=e276]: または下に直接JSONを貼り付け
+      - textbox "ここにJSONを貼り付けてください" [active] [ref=e277]: "{\"id\":\"multi-flow-test\",\"name\":\"複数フローテスト\",\"description\":\"複数フローの視覚的分離テスト用\",\"createdAt\":\"2024-01-01T00:00:00.000Z\",\"updatedAt\":\"2024-01-01T00:00:00.000Z\",\"actors\":[{\"id\":\"ui\",\"type\":\"component\",\"name\":\"AppComponent\"},{\"id\":\"store\",\"type\":\"store\",\"name\":\"UserStore\",\"scope\":\"global\",\"description\":\"ユーザー情報を管理するグローバルストア\"},{\"id\":\"api\",\"type\":\"service\",\"name\":\"UserAPI\"}],\"states\":[{\"id\":\"s_user\",\"name\":\"currentUser\",\"owner\":\"store\",\"dataType\":\"User | null\",\"scope\":\"local\"},{\"id\":\"s_list\",\"name\":\"userList\",\"owner\":\"store\",\"dataType\":\"User[]\"}],\"conditions\":[],\"flows\":[{\"id\":\"flow_login\",\"name\":\"ログインフロー\",\"trigger\":{\"type\":\"userAction\",\"actor\":\"ui\",\"action\":\"Click Login\"},\"steps\":[{\"id\":\"st1\",\"type\":\"dispatch\",\"from\":\"ui\",\"to\":\"store\",\"action\":\"login()\"}]}]}"
+      - generic [ref=e314]:
+        - generic [ref=e315]:
+          - generic [ref=e316]: warning
+          - generic [ref=e317]: インポート結果
+        - generic [ref=e318]:
+          - generic [ref=e319]:
+            - generic [ref=e320]: Actor
+            - generic [ref=e321]: "3"
+          - generic [ref=e322]:
+            - generic [ref=e323]: State
+            - generic [ref=e324]: "2"
+          - generic [ref=e325]:
+            - generic [ref=e326]: Flow
+            - generic [ref=e327]: "1"
+          - generic [ref=e328]:
+            - generic [ref=e329]: Condition
+            - generic [ref=e330]: "0"
+          - generic [ref=e331]:
+            - generic [ref=e332]: Error
+            - generic [ref=e333]: "0"
+          - generic [ref=e334]:
+            - generic [ref=e335]: Warning
+            - generic [ref=e336]: "1"
+          - generic [ref=e337]:
+            - generic [ref=e338]: Skip
+            - generic [ref=e339]: "0"
+          - generic [ref=e340]:
+            - generic [ref=e341]: Fix
+            - generic [ref=e342]: "1"
+        - paragraph [ref=e344]: state currentUser の scope を削除しました
+    - generic [ref=e309]:
+      - button "閉じる" [ref=e310]
+      - button "適用" [ref=e345]
+    - button "Close" [ref=e312]:
+      - img
+      - generic [ref=e313]: Close

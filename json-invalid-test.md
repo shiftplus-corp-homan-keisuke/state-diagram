@@ -1,0 +1,123 @@
+- generic:
+  - generic:
+    - generic:
+      - banner:
+        - generic:
+          - button:
+            - img
+            - text: 一覧
+          - heading [level=1]: 新しいダイアグラム
+        - generic:
+          - generic: 保存済み
+          - button:
+            - img
+            - text: JSON
+          - button:
+            - img
+            - text: 保存
+      - generic:
+        - complementary:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - button:
+                      - generic:
+                        - img
+                        - text: アクター
+                      - generic: "0"
+                    - generic:
+                      - button:
+                        - img
+                        - text: 追加
+                  - generic:
+                    - button:
+                      - generic:
+                        - img
+                        - text: 状態
+                      - generic: "0"
+                    - generic:
+                      - button:
+                        - img
+                        - text: 追加
+                  - generic:
+                    - button:
+                      - generic:
+                        - img
+                        - text: フロー
+                      - generic: "0"
+                    - generic:
+                      - button:
+                        - img
+                        - text: 追加
+                  - generic:
+                    - button:
+                      - generic:
+                        - img
+                        - text: 条件
+                      - generic: "0"
+          - generic:
+            - paragraph: スコープ凡例
+            - generic:
+              - generic: 📍 ローカル
+              - generic: 🌲 サブツリー
+              - generic: 🌍 グローバル
+        - main:
+          - generic:
+            - paragraph: アクターがありません
+            - paragraph: サイドバーからアクターを追加してください
+  - dialog "JSON エクスポート / インポート" [ref=e85]:
+    - generic [ref=e86]:
+      - heading "JSON エクスポート / インポート" [level=2] [ref=e87]
+      - paragraph [ref=e88]: ダイアグラム JSON の書き出しと取り込みを行います。インポート時は検証結果を確認してから適用してください。
+    - generic [ref=e89]:
+      - button "エクスポート" [ref=e90]:
+        - img
+        - text: エクスポート
+      - button "インポート" [ref=e91]:
+        - img
+        - text: インポート
+    - generic [ref=e92]:
+      - generic [ref=e98]:
+        - generic [ref=e100] [cursor=pointer]:
+          - img
+          - text: ファイルを選択
+        - generic [ref=e101]: または下に直接JSONを貼り付け
+      - textbox "ここにJSONを貼り付けてください" [active] [ref=e102]: "{ invalid json }"
+      - generic [ref=e103]:
+        - generic [ref=e104]:
+          - generic [ref=e105]: error
+          - generic [ref=e106]: インポート結果
+        - generic [ref=e107]:
+          - generic [ref=e108]:
+            - generic [ref=e109]: Actor
+            - generic [ref=e110]: "0"
+          - generic [ref=e111]:
+            - generic [ref=e112]: State
+            - generic [ref=e113]: "0"
+          - generic [ref=e114]:
+            - generic [ref=e115]: Flow
+            - generic [ref=e116]: "0"
+          - generic [ref=e117]:
+            - generic [ref=e118]: Condition
+            - generic [ref=e119]: "0"
+          - generic [ref=e120]:
+            - generic [ref=e121]: Error
+            - generic [ref=e122]: "1"
+          - generic [ref=e123]:
+            - generic [ref=e124]: Warning
+            - generic [ref=e125]: "0"
+          - generic [ref=e126]:
+            - generic [ref=e127]: Skip
+            - generic [ref=e128]: "0"
+          - generic [ref=e129]:
+            - generic [ref=e130]: Fix
+            - generic [ref=e131]: "0"
+        - paragraph [ref=e133]: JSON の解析に失敗しました
+    - generic [ref=e94]:
+      - button "閉じる" [ref=e95]
+      - button "適用" [disabled]
+    - button "Close" [ref=e96]:
+      - img
+      - generic [ref=e97]: Close

@@ -6,7 +6,7 @@
 - Owner: 未定
 
 ## Milestones
-- [ ] M1: P0 完了
+- [x] M1: P0 完了
 - [ ] M2: P1 完了
 - [ ] M3: P2 完了
 

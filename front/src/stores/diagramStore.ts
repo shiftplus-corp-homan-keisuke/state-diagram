@@ -5,8 +5,20 @@ import { saveDiagram as saveToDb } from "@/db/database";
 interface DiagramStore {
   /** 現在編集中のダイアグラム */
   diagram: Diagram | null;
+  /** 保存済み基準時刻 */
+  lastSavedAt: Date | null;
+  /** 未保存変更の有無 */
+  isDirty: boolean;
   /** ダイアグラムを設定 */
-  setDiagram: (diagram: Diagram | null) => void;
+  setDiagram: (
+    diagram: Diagram | null,
+    options?: {
+      isDirty?: boolean;
+      lastSavedAt?: Date | null;
+    },
+  ) => void;
+  /** ダイアグラム名を更新 */
+  renameDiagram: (name: string) => void;
   /** ダイアグラムをDBに保存 */
   saveDiagram: () => Promise<void>;
 
@@ -33,16 +45,39 @@ interface DiagramStore {
 
 export const useDiagramStore = create<DiagramStore>((set, get) => ({
   diagram: null,
+  lastSavedAt: null,
+  isDirty: false,
 
-  setDiagram: (diagram) => set({ diagram }),
+  setDiagram: (diagram, options) =>
+    set((state) => ({
+      diagram,
+      isDirty: options?.isDirty ?? false,
+      lastSavedAt: diagram
+        ? options?.lastSavedAt !== undefined
+          ? options.lastSavedAt
+          : state.lastSavedAt
+        : null,
+    })),
+
+  renameDiagram: (name) =>
+    set((state) => {
+      if (!state.diagram) return state;
+      return {
+        diagram: {
+          ...state.diagram,
+          name,
+        },
+        isDirty: true,
+      };
+    }),
 
   saveDiagram: async () => {
     const { diagram } = get();
-    if (diagram) {
-      const updated = { ...diagram, updatedAt: new Date() };
-      set({ diagram: updated });
-      await saveToDb(updated);
-    }
+    if (!diagram) return;
+
+    const updated = { ...diagram, updatedAt: new Date() };
+    await saveToDb(updated);
+    set({ diagram: updated, isDirty: false, lastSavedAt: updated.updatedAt });
   },
 
   // アクター操作
@@ -54,6 +89,7 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
           ...state.diagram,
           actors: [...state.diagram.actors, actor],
         },
+        isDirty: true,
       };
     }),
 
@@ -67,6 +103,7 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
             a.id === id ? { ...a, ...updates } : a,
           ),
         },
+        isDirty: true,
       };
     }),
 
@@ -78,6 +115,7 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
           ...state.diagram,
           actors: state.diagram.actors.filter((a) => a.id !== id),
         },
+        isDirty: true,
       };
     }),
 
@@ -90,6 +128,7 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
           ...state.diagram,
           states: [...state.diagram.states, newState],
         },
+        isDirty: true,
       };
     }),
 
@@ -103,6 +142,7 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
             s.id === id ? { ...s, ...updates } : s,
           ),
         },
+        isDirty: true,
       };
     }),
 
@@ -114,6 +154,7 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
           ...state.diagram,
           states: state.diagram.states.filter((s) => s.id !== id),
         },
+        isDirty: true,
       };
     }),
 
@@ -126,6 +167,7 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
           ...state.diagram,
           flows: [...state.diagram.flows, flow],
         },
+        isDirty: true,
       };
     }),
 
@@ -139,6 +181,7 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
             f.id === id ? { ...f, ...updates } : f,
           ),
         },
+        isDirty: true,
       };
     }),
 
@@ -150,6 +193,7 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
           ...state.diagram,
           flows: state.diagram.flows.filter((f) => f.id !== id),
         },
+        isDirty: true,
       };
     }),
 
@@ -162,6 +206,7 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
           ...state.diagram,
           conditions: [...state.diagram.conditions, condition],
         },
+        isDirty: true,
       };
     }),
 
@@ -175,6 +220,7 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
             c.id === id ? { ...c, ...updates } : c,
           ),
         },
+        isDirty: true,
       };
     }),
 
@@ -186,6 +232,7 @@ export const useDiagramStore = create<DiagramStore>((set, get) => ({
           ...state.diagram,
           conditions: state.diagram.conditions.filter((c) => c.id !== id),
         },
+        isDirty: true,
       };
     }),
 }));

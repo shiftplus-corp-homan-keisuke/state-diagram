@@ -11,7 +11,7 @@ const DiagramListPage = lazy(() => import("./pages/DiagramListPage"));
 const DiagramEditorPage = lazy(() => import("./pages/DiagramEditorPage"));
 
 // ローディングコンポーネント
-const Loading = () => (
+const loadingFallback = (
   <div className="min-h-screen flex items-center justify-center bg-background">
     <p className="text-muted-foreground">読み込み中...</p>
   </div>
@@ -27,7 +27,7 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
   component: () => (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={loadingFallback}>
       <DiagramListPage />
     </Suspense>
   ),
@@ -38,7 +38,7 @@ const diagramRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/diagram/$diagramId",
   component: () => (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={loadingFallback}>
       <DiagramEditorPage />
     </Suspense>
   ),

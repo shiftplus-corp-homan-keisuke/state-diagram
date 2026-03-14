@@ -1,186 +1,346 @@
-# JSONデータ作成ガイド
+# JSON作成ガイド
 
-このドキュメントでは、State Flow Visualizerで使用するJSONデータを実際に作成する手順を解説します。
-手動で作成する場合や、生成AIに指示を出して生成させる場合の参考にしてください。
+State Flow Visualizer 用 JSON を、人手または LLM で作成するときの実務向けガイドです。現行フロントエンド実装とインポート UI に合わせています。
 
-## 1. 準備：可視化範囲の特定
+## 1. 先に決めること
 
-まず、どのシナリオ（ユースケース）を可視化したいかを明確にします。
-複雑すぎるフローは分割し、1つのJSONファイルにつき1つの主要なシナリオ（「カートに追加する」「ログインする」など）に焦点を当てると分かりやすくなります。
+作成前に、次の 3 点を決めます。
 
-### 1.1 土台の作成 (Root)
+- どの機能を対象にするか
+- どのシナリオを 1 ファイルで表すか
+- どの Actor / State / Flow / Condition を含めるか
 
-JSONファイルの一番外側（ルート）には、必ず `id` と `name` が必要です。これがないとエラーになります。
+### 推奨単位
+
+- 1 JSON = 1 機能、または 1 主要シナリオ
+- 複雑な機能はファイルを分割する
+- 1 ファイルに unrelated な機能を詰め込みすぎない
+
+例:
+
+- `login.json`: ログイン機能
+- `cart-add-item.json`: カート追加
+- `cart-checkout.json`: 決済開始
+
+---
+
+## 2. インポート方法を意識して作る
+
+現行アプリでは、JSON インポートを次の 2 通りで行えます。
+
+- JSON ファイルをアップロードする
+- ダイアログへ JSON を直接貼り付ける
+
+そのため、LLM に依頼する場合も手書きする場合も、次を守ってください。
+
+- 出力は純粋な JSON のみ
+- Markdown のコードフェンスを含めない
+- 説明文や前置き、補足文章を JSON の外に混ぜない
+- そのまま貼り付け・保存できる形式にする
+
+---
+
+## 3. ルートを作る
+
+最低限、`id` と `name` は必須です。`createdAt` / `updatedAt` は ISO 8601 文字列を推奨します。
 
 ```json
 {
-  "id": "my-diagram-001",
-  "name": "Todoアプリ シナリオA",
-  "description": "...",
+  "id": "login-flow",
+  "name": "ログイン機能",
+  "description": "ログインフォーム送信から認証完了まで",
+  "createdAt": "2026-03-14T00:00:00.000Z",
+  "updatedAt": "2026-03-14T00:00:00.000Z",
   "actors": [],
   "states": [],
-  "flows": []
+  "flows": [],
+  "conditions": []
 }
 ```
 
-## 2. アクター (Actors) の定義
+### 日時のルール
 
-登場人物を洗い出します。
+- JSON 上では文字列です
+- 形式は ISO 8601 を使います
+- アプリ読込時に `Date` へ変換されます
+- 仕様書では「JSON としては文字列、読込時に `Date` へ変換」と理解してください
 
-### 手順
+---
 
-1.  **IDの決定**: ユニークなIDを振ります（例: `ui`, `store`, `api` など短縮形が書きやすいです）。
-2.  **種類の特定 (`type`)**:
-    - `component`: Reactコンポーネント、UI要素
-    - `store`: 状態管理（Zustand, Redux, Context）
-    - `service`: APIクライアント、ロジック層
-    - `external`: 外部システム、DB
-3.  **スコープ (`scope`)**（※Storeの場合）:
-    - 状態の影響範囲を設定します（`local`, `subtree`, `global`）。これで図の色が変わります。
+## 4. Actor を定義する
+
+まず登場人物を洗い出します。
+
+### `type` の使い分け
+
+- `component`: UI コンポーネント
+- `store`: 状態管理ストア
+- `service`: API クライアントやロジック層
+- `external`: 外部 API、DB、SaaS
+
+### `scope` の扱い
+
+重要: `scope` は `State` ではなく `Actor` に属します。
+
+- `scope` は主に `type: "store"` の Actor に付けます
+- `local` / `subtree` / `global` を使います
+- 状態の影響範囲を表したいときも、State 側ではなく所有 Actor 側に記述します
 
 ### 例
 
 ```json
 "actors": [
-  { "id": "ui", "type": "component", "name": "TodoList" },
-  { "id": "store", "type": "store", "name": "TodoStore", "scope": "global" },
-  { "id": "api", "type": "service", "name": "TodoApi" }
+  {
+    "id": "login-form",
+    "type": "component",
+    "name": "LoginForm"
+  },
+  {
+    "id": "auth-store",
+    "type": "store",
+    "name": "AuthStore",
+    "scope": "global"
+  },
+  {
+    "id": "auth-api",
+    "type": "service",
+    "name": "AuthApi"
+  }
 ]
 ```
 
-## 3. 状態 (States) の定義
+---
 
-フロー内で変化する重要な変数を定義します。
+## 5. State を定義する
 
-### 手順
+次に、フローの中で意味のある状態を定義します。
 
-1.  **オーナーの特定 (`owner`)**: どのActorが持っている状態か（IDで指定）。
-2.  **状態名の決定**: 変数名（例: `todos`, `isLoading`）。
+### ポイント
+
+- `owner` には必ず Actor ID を入れます
+- `scope` は State に書かないでください
+- 迷ったら「この値をどの Actor が保持しているか」で owner を決めます
 
 ### 例
 
 ```json
 "states": [
-  { "id": "s_todos", "name": "todos", "owner": "store" },
-  { "id": "s_loading", "name": "isLoading", "owner": "store" }
-]
-```
-
-## 4. フロー (Flows) の構築
-
-物語（シナリオ）をステップ・バイ・ステップで記述します。
-
-### 4.1 トリガー (`trigger`)
-
-物語の開始地点です。
-
-- **User Action**: ユーザーがボタンを押した、文字を入力した、など。
-- **Action名**: 具体的に（例: `[Click] Add Button`）。
-
-### 4.2 ステップ (`steps`)
-
-ここが最も重要です。以下の順序で組み立てるのが基本パターンです。
-
-**基本パターン: Action -> State Update -> UI Update**
-
-1.  **Dispatch (命令)**: UIからStore/Serviceへ。
-    - `type: "dispatch"`, `from: "ui"`, `to: "store"`, `action: "addTodo(...)"`
-    - ※矢印のラベルになります。
-2.  **State Change (変化)**: Store内で値が変わる。
-    - `type: "stateChange"`, `from: "store"`, `to: "store"`, `state: "s_todos"`, `action: "push(newTodo)"`
-    - ※緑色のノードとして強調表示されます。
-3.  **Subscribe (通知)**: 変化をUIが検知する。
-    - `type: "subscribe"`, `from: "store"`, `to: "ui"`, `state: "s_todos"`, `action: "render()"`
-    - ※青い破線でフィードバックを表現します。
-4.  **Effect / API Call (副作用)**: 必要に応じて外部システムの呼び出し。
-    - `type: "dispatch"`, `from: "store"`, `to: "api"`, `action: "post(...)"`, `isAsync: true`
-    - ※`isAsync: true`をつけると「⏳ async」マーカーが表示されます。
-
-### 例
-
-```json
-"flows": [
   {
-    "id": "flow1",
-    "name": "Todo追加フロー",
-    "trigger": { "type": "userAction", "actor": "ui", "action": "Click Add" },
-    "steps": [
-      { "id": "st1", "type": "dispatch", "from": "ui", "to": "store", "action": "add('Buy Milk')" },
-      { "id": "st2", "type": "stateChange", "from": "store", "to": "store", "state": "s_todos", "action": "updated" },
-      { "id": "st3", "type": "subscribe", "from": "store", "to": "ui", "state": "s_todos", "action": "render()" }
-    ]
+    "id": "current-user",
+    "name": "currentUser",
+    "owner": "auth-store",
+    "dataType": "User | null"
+  },
+  {
+    "id": "is-loading",
+    "name": "isLoading",
+    "owner": "auth-store",
+    "dataType": "boolean"
   }
 ]
 ```
 
-### 4.3 条件分岐 (`conditions`)
+---
 
-「在庫がある場合のみ追加する」といった分岐を表現する場合に使用します。
+## 6. Flow を作る
 
-1.  **条件定義**: `conditions` 配列に条件式を定義します。
-    - `id: "cond_stock"`, `expression: "stock > 0"`
-2.  **ステップへの適用**: 分岐が発生するステップに `condition` IDを指定します。
-    - `{ ..., "condition": "cond_stock" }`
+Flow は「何をきっかけに、どこからどこへ、何が起きるか」を並べたものです。
+
+### 6.1 trigger を決める
+
+開始条件を `trigger` に書きます。
+
+例:
+
+```json
+"trigger": {
+  "type": "userAction",
+  "actor": "login-form",
+  "action": "click",
+  "target": "ログインボタン"
+}
+```
+
+### 6.2 steps を組み立てる
+
+基本パターンは次です。
+
+- `dispatch`: 命令やイベント送信
+- `stateChange`: 状態更新
+- `subscribe`: 状態変化の反映
+- 必要に応じて `effect`, `render`
+
+### 基本例
+
+```json
+"steps": [
+  {
+    "id": "step-submit-login",
+    "type": "dispatch",
+    "from": "login-form",
+    "to": "auth-store",
+    "action": "login(credentials)"
+  },
+  {
+    "id": "step-start-loading",
+    "type": "stateChange",
+    "from": "auth-store",
+    "to": "auth-store",
+    "state": "is-loading",
+    "action": "setLoading(true)"
+  },
+  {
+    "id": "step-call-auth-api",
+    "type": "dispatch",
+    "from": "auth-store",
+    "to": "auth-api",
+    "action": "POST /auth/login",
+    "isAsync": true
+  },
+  {
+    "id": "step-set-user",
+    "type": "stateChange",
+    "from": "auth-store",
+    "to": "auth-store",
+    "state": "current-user",
+    "action": "setUser(response.user)"
+  },
+  {
+    "id": "step-update-ui",
+    "type": "subscribe",
+    "from": "auth-store",
+    "to": "login-form",
+    "state": "current-user",
+    "action": "redirectToDashboard()"
+  }
+]
+```
+
+### 非同期の書き方
+
+- API 呼び出しやタイマー起点の処理には `isAsync: true` を付ける
+- `dispatch` だけでなく、必要なら `effect` に付けてもよい
+
+---
+
+## 7. Condition を使う
+
+分岐がある場合は `conditions` に定義し、各 step から参照します。
 
 ### 例
 
 ```json
 "conditions": [
-  { "id": "c1", "expression": "isLoggedIn == true" }
-],
-"flows": [
   {
-    ...,
-    "steps": [
-      { "id": "st1", "type": "dispatch", "action": "checkout()", "condition": "c1" }
-    ]
+    "id": "input-is-valid",
+    "expression": "isValid(credentials)",
+    "description": "入力値が妥当な場合"
   }
 ]
 ```
 
-## 5. よくある間違いと注意点 (Critical Check)
-
-JSON作成時に最もエラーになりやすいポイントです。必ずチェックしてください。
-
-- [ ] **IDの参照整合性**:
-  - `steps` の `from`, `to` に指定するIDは、必ず `actors` 配列に存在するIDでなければなりません。
-  - `state` に指定するIDは、必ず `states` 配列に存在するIDでなければなりません。
-- [ ] **State Ownerの一致**:
-  - `stateChange` ステップで変更するstateは、そのstepの `to` (Actor) が所有 (`owner`) している必要があります。
-- [ ] **一意なID**:
-  - すべての `id` フィールドは、その配列内でユニークである必要があります。
-
-## 6. 生成AIへのプロンプト例
-
-既存のソースコードからこのJSONを生成させたい場合、以下のプロンプトテンプレートを使用すると効果的です。
+```json
+{
+  "id": "step-submit-login",
+  "type": "dispatch",
+  "from": "login-form",
+  "to": "auth-store",
+  "action": "login(credentials)",
+  "condition": "input-is-valid"
+}
+```
 
 ---
 
-**プロンプト:**
+## 8. 参照整合性チェック
 
-あなたはReact/TypeScriptアプリケーションのアーキテクトです。
-以下のソースコード（コンポーネントとストア）を分析し、**State Flow Visualizer**用のJSONデータを生成してください。
+後続 validator 実装でもそのまま使える、最低限の確認項目です。
 
-**出力要件:**
+- `owner` が存在する Actor を参照しているか
+- `trigger.actor` が存在する Actor を参照しているか
+- `steps[].from` / `steps[].to` が存在する Actor を参照しているか
+- `steps[].state` が存在する State を参照しているか
+- `steps[].condition` が存在する Condition を参照しているか
+- 各配列内の `id` が重複していないか
+- `scope` を State 側に書いていないか
+- `stateChange` がその State の owner と矛盾していないか
 
-1.  **Actors**: 主要なコンポーネントとストアを抽出。
-2.  **States**: `useState`, `useStore` などで管理されている主要な状態変数を抽出。
-3.  **Flow**: ユーザーの「[具体的な操作名]」をトリガーとする一連の処理フローをステップ化してください。
-    - 関数呼び出しは `dispatch`
-    - 状態変数の更新は `stateChange`
-    - UIへの反映は `subscribe`
-      として表現すること。
-
-**ターゲットコード:**
-[ここにコードを貼り付け]
-
-**JSONフォーマット参考:**
-(JSON仕様書.md の内容を参照または貼り付け)
+特に LLM 生成では、参照切れが最も起きやすいので必ず確認してください。
 
 ---
 
-## 6. ヒントとベストプラクティス
+## 9. インポート結果の考え方
 
-- **粒度**: すべての行をステップにする必要はありません。「主要なデータの流れ」が見える粒度が最適です。
-- **ID管理**: 手書きの場合は `a1`, `s1`, `st1` のような短いIDでも十分ですが、`ui_header`, `state_user` のように意味のあるIDにするとデバッグしやすくなります。
-- **ラベル**: `action` フィールドは図の中に表示されるテキストです。コードそのままでなく、人間が読みやすい要約（例: `fetchData` → `データ取得開始`）にしても構いません。
+仕様とガイドでは、インポート結果に次の概念がある前提で扱って構いません。
+
+- `success`
+- `warning`
+- `error`
+
+また、サマリ件数として次を持つ前提で設計して問題ありません。
+
+- `actor`
+- `state`
+- `flow`
+- `condition`
+- `error`
+- `warning`
+- `skip`
+- `fix`
+
+### 意味の目安
+
+- `success`: 読込可能で重大問題なし
+- `warning`: 読込可能だが修正推奨
+- `error`: 読込不可、または明確な不正
+- `skip`: 無視した要素
+- `fix`: 自動補正した要素
+
+注意: これらはインポート結果・validator 結果の概念です。通常のダイアグラム JSON 本体に含める必須フィールドではありません。
+
+---
+
+## 10. LLM に依頼するテンプレート
+
+そのまま使える短めのテンプレートです。
+
+```text
+あなたは React / TypeScript アプリケーションの構造を整理するアシスタントです。
+以下のコードを分析し、State Flow Visualizer 用の JSON を 1 つ生成してください。
+
+要件:
+- 出力は純粋な JSON のみ
+- JSON はファイルアップロードでも貼り付けでも使える形式にする
+- 日時は ISO 8601 文字列
+- scope は State ではなく Actor に置く
+- scope は主に store Actor に設定する
+- actors / states / flows / conditions の参照整合性を守る
+- 1 ファイル 1 機能または 1 主要シナリオに絞る
+- 不明な要素は捏造しない
+
+対象コード:
+[ここにコードを貼る]
+```
+
+---
+
+## 11. よくあるミス
+
+- `createdAt` / `updatedAt` を Date オブジェクト表現のまま書く
+- `scope` を `State` に付ける
+- 存在しない Actor ID を `owner` や `from` / `to` に入れる
+- 1 ファイルに複数機能を入れすぎる
+- JSON の前後に説明文を付けてしまう
+- `conditions` を定義したのに `steps[].condition` で参照しない、またはその逆
+
+---
+
+## 12. 作成前の最終チェック
+
+- `id` と `name` がある
+- `createdAt` / `updatedAt` が ISO 8601 文字列
+- `scope` は Actor にのみある
+- `store` Actor に必要な `scope` がある
+- 参照 ID がすべて解決できる
+- 貼り付け可能な純粋 JSON になっている
+- 1 ファイルの責務が明確

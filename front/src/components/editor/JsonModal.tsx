@@ -1,17 +1,29 @@
-import { useState } from "react";
+import { useMemo, useState, type ChangeEvent } from "react";
 import { Copy, Download, Upload, Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { validateDiagramImport } from "@/lib/diagramImport";
 import { useDiagramStore } from "@/stores/diagramStore";
 import { useUIStore } from "@/stores/uiStore";
-import type { Diagram } from "@/types/diagram";
+
+const summaryLabels = [
+  ["actor", "Actor"],
+  ["state", "State"],
+  ["flow", "Flow"],
+  ["condition", "Condition"],
+  ["error", "Error"],
+  ["warning", "Warning"],
+  ["skip", "Skip"],
+  ["fix", "Fix"],
+] as const;
 
 export function JsonModal() {
   const { diagram, setDiagram } = useDiagramStore();
@@ -20,6 +32,16 @@ export function JsonModal() {
   const [mode, setMode] = useState<"export" | "import">("export");
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
+
+  const importResult = useMemo(() => {
+    if (mode !== "import" || !jsonContent.trim()) {
+      return null;
+    }
+
+    return validateDiagramImport(jsonContent, {
+      currentDiagramId: diagram?.id,
+    });
+  }, [diagram?.id, jsonContent, mode]);
 
   const handleExport = () => {
     if (!diagram) return;
@@ -59,45 +81,15 @@ export function JsonModal() {
   };
 
   const handleApplyImport = () => {
-    try {
-      const parsed = JSON.parse(jsonContent) as any;
-
-      // 基本的なバリデーション
-      if (!parsed.id || !parsed.name) {
-        throw new Error("無効なダイアグラム形式です（id, nameは必須です）");
-      }
-
-      // Dateオブジェクトへの変換
-      // JSON.parse直後は文字列なので、明示的にDate型に変換する必要があります
-      parsed.createdAt = parsed.createdAt
-        ? new Date(parsed.createdAt)
-        : new Date();
-      parsed.updatedAt = parsed.updatedAt
-        ? new Date(parsed.updatedAt)
-        : new Date();
-
-      if (!Array.isArray(parsed.actors)) parsed.actors = [];
-      if (!Array.isArray(parsed.states)) parsed.states = [];
-      if (!Array.isArray(parsed.flows)) parsed.flows = [];
-      if (!Array.isArray(parsed.conditions)) parsed.conditions = [];
-
-      // バリデーション完了後、Diagram型として扱う
-      const validDiagram = parsed as Diagram;
-
-      // 現在のダイアグラムのIDを維持（インポートしたデータで上書きする場合）
-      if (diagram) {
-        validDiagram.id = diagram.id;
-        validDiagram.updatedAt = new Date();
-      }
-
-      setDiagram(validDiagram);
-      closeJsonModal();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "JSONの解析に失敗しました");
+    if (!importResult || importResult.status === "error" || !importResult.diagram) {
+      return;
     }
+
+    setDiagram(importResult.diagram, { isDirty: true });
+    closeJsonModal();
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -118,6 +110,9 @@ export function JsonModal() {
       <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
         <DialogHeader className="shrink-0">
           <DialogTitle>JSON エクスポート / インポート</DialogTitle>
+          <DialogDescription>
+            ダイアグラム JSON の書き出しと取り込みを行います。インポート時は検証結果を確認してから適用してください。
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex gap-2 mb-4 shrink-0">
@@ -177,6 +172,51 @@ export function JsonModal() {
           {error && (
             <p className="text-sm text-destructive shrink-0">{error}</p>
           )}
+
+          {mode === "import" && importResult && (
+            <div className="space-y-3 shrink-0 border rounded-md p-3 bg-muted/20">
+              <div className="flex items-center gap-2 text-sm">
+                <span
+                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                    importResult.status === "success"
+                      ? "bg-emerald-100 text-emerald-700"
+                      : importResult.status === "warning"
+                        ? "bg-amber-100 text-amber-700"
+                        : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {importResult.status}
+                </span>
+                <span className="text-muted-foreground">インポート結果</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+                {summaryLabels.map(([key, label]) => (
+                  <div key={key} className="rounded border bg-background px-2 py-1">
+                    <div className="text-muted-foreground">{label}</div>
+                    <div className="font-semibold">{importResult.summary[key]}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="max-h-40 space-y-1 overflow-y-auto text-xs">
+                {importResult.messages.map((message, index) => (
+                  <p
+                    key={`${message.level}-${index}`}
+                    className={
+                      message.level === "error"
+                        ? "text-destructive"
+                        : message.level === "warning"
+                          ? "text-amber-700"
+                          : "text-emerald-700"
+                    }
+                  >
+                    {message.text}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <DialogFooter>
@@ -205,7 +245,12 @@ export function JsonModal() {
             </>
           )}
           {mode === "import" && jsonContent && (
-            <Button onClick={handleApplyImport}>適用</Button>
+            <Button
+              onClick={handleApplyImport}
+              disabled={!importResult || importResult.status === "error"}
+            >
+              適用
+            </Button>
           )}
         </DialogFooter>
       </DialogContent>

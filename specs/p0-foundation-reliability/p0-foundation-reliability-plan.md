@@ -28,6 +28,12 @@ JSON 仕様・実装型・import・可視化の信頼性を揃え、このアプ
 - P0 では新機能拡張よりも整合性と信頼性を優先する
 - import バリデーションは UI から分離し、テストしやすい純関数または独立モジュールに寄せる
 - ブラウザ確認により、`不正JSONでも適用ボタンが押せる`, `保存状態が分かりにくい`, `Dialog 警告が出る` ことを確認済み
+- 現時点で docs 整合、validator、import result UI、保存状態表示、Dialog 警告解消、lint/build/test 基盤までは完了済み
+- P0 の残項目は `SequenceDiagram` 側の異常データ明示と `database` roundtrip テスト追加が中心
+
+## Completion Note
+- `SequenceDiagram` の異常データサマリ表示と `database` roundtrip テストを追加し、P0 完了
+- 最終検証: `npm run lint`, `npm run build`, `npm run test` 通過
 
 ## Done When
 - [ ] 仕様書・型・サンプル JSON が一致している

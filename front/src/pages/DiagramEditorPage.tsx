@@ -18,7 +18,8 @@ import { useUIStore } from "@/stores/uiStore";
 export default function DiagramEditorPage() {
   const { diagramId } = useParams({ from: "/diagram/$diagramId" });
   const navigate = useNavigate();
-  const { diagram, setDiagram, saveDiagram } = useDiagramStore();
+  const { diagram, isDirty, lastSavedAt, setDiagram, renameDiagram, saveDiagram } =
+    useDiagramStore();
   const { openJsonModal } = useUIStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -34,7 +35,7 @@ export default function DiagramEditorPage() {
     try {
       const data = await getDiagramById(diagramId);
       if (data) {
-        setDiagram(data);
+        setDiagram(data, { lastSavedAt: data.updatedAt });
         setNameInput(data.name);
       } else {
         navigate({ to: "/" });
@@ -62,12 +63,22 @@ export default function DiagramEditorPage() {
 
   const handleNameSubmit = () => {
     if (diagram && nameInput.trim()) {
-      useDiagramStore.setState({
-        diagram: { ...diagram, name: nameInput.trim() },
-      });
+      renameDiagram(nameInput.trim());
     }
     setEditingName(false);
   };
+
+  const saveStateLabel = isDirty
+    ? "変更あり"
+    : lastSavedAt
+      ? "保存済み"
+      : "未保存";
+
+  const saveStateClassName = isDirty
+    ? "text-amber-700 bg-amber-100 border-amber-200"
+    : lastSavedAt
+      ? "text-emerald-700 bg-emerald-100 border-emerald-200"
+      : "text-muted-foreground bg-muted border-border";
 
   if (loading) {
     return (
@@ -117,6 +128,11 @@ export default function DiagramEditorPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
+          <span
+            className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium ${saveStateClassName}`}
+          >
+            {saveStateLabel}
+          </span>
           <Button variant="outline" size="sm" onClick={() => openJsonModal()}>
             <FileJson className="h-4 w-4 mr-1" />
             JSON
