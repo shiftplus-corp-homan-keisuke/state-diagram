@@ -1,0 +1,1 @@
+作業完了時は少なくとも `cd front && npm run lint` と `cd front && npm run build` を確認する。テスト基盤導入後は `cd front && npm run test` も必須。複雑な継続作業では specs 配下の plan/task ファイルを更新し、次会話で引き継げるように状態・次アクション・検証結果を残す。

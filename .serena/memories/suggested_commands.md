@@ -1,0 +1,1 @@
+主要コマンド: `cd front && npm install`, `cd front && npm run dev`, `cd front && npm run build`, `cd front && npm run lint`, `cd front && npm run preview`。補助: `python3 .opencode/scripts/checklist.py .` でワークスペースチェック。Linux 基本コマンド: `git status`, `ls`, `pwd`, `rg`, `npm`. 現時点では test script は未整備だが、今後 `npm run test` を追加予定。

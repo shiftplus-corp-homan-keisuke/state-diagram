@@ -1,0 +1,1 @@
+State Flow Visualizer。React/TypeScript/Vite ベースのフロントエンド単体アプリで、フロントエンドの状態管理・イベントフローをシーケンス図として可視化する。主要構成は front/（アプリ本体）, docs/（仕様・ガイド）, .opencode/（運用用エージェント/スクリプト）。永続化は Dexie + IndexedDB。主な画面はダイアグラム一覧とダイアグラム編集画面。

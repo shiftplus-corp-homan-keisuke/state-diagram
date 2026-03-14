@@ -1,0 +1,1 @@
+TypeScript + React 構成。UI は Tailwind CSS v4 と Radix UI/shadcn系。状態管理は Zustand。図描画は React Flow。clean-code 方針が強く、簡潔・直接的・過剰設計しない実装が期待される。ドキュメントは日本語中心。計画系ファイルは specs/{slug}/{slug}-plan.md と specs/{slug}/{slug}-task.md に保存する運用。
